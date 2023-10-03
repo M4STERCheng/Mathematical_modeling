@@ -1,0 +1,103 @@
+求解下列线性规划问题并求出影子价格
+
+$$
+\max z = 6x_1 + 4x_2 + 7x_3
+$$
+
+$$
+s.t.
+\begin{align*}
+x_1 + 0.8x_2 + 1.5x_3 & \leq 3000\\
+1.5x_1 - 2x_2 + 3x_3 & \leq 5000 \\
+x_1 + x_2 + x_3 &\leq 3500 \\
+x_1, x_3  &\geq 0, x_2 \geq 0
+\end{align*}
+$$
+
+```python
+from pulp import *
+```
+
+```python
+prob = pulp.LpProblem('线性规划问题2',LpMaximize)
+```
+
+```python
+# 定义变量
+x1 = LpVariable('x1', lowBound=0)
+x2 = LpVariable('x2', lowBound=500)
+x3 = LpVariable('x3', lowBound=0)
+```
+
+```python
+# 定义目标函数
+prob += 6 * x1 + 4 * x2 + 7 * x3, "Z"
+
+# 添加约束条件
+prob += x1 + 0.8 * x2 + 1.5 * x3 <= 3000
+prob += 1.5 * x1 + 2 * x2 + 3 * x3 <= 5000
+prob += x1 +  x2 + x3 <= 3500
+```
+
+```python
+prob.solve()
+```
+
+    1
+
+```python
+# 输出结果
+print("Status:",LpStatus[prob.status])
+
+# 输出决策变量的值
+variables = [x1, x2, x3]
+for variable in variables:
+    print(f"{variable.name} = {value(variable)}")
+  
+print("Max Z =", value(prob.objective))
+```
+
+    Status: Optimal
+    x1 = 2600.0
+    x2 = 500.0
+    x3 = 0.0
+    Max Z = 17600.0
+
+```python
+
+# 输出影子价格
+shadow_prices = []
+for name, constraint in prob.constraints.items():
+    shadow_prices.append((name, constraint.pi))
+  
+print("Shadow Prices:")
+for constraint, price in shadow_prices:
+    # 控制小数点后面的位数，这里设置为保留2位小数
+    print(f"{constraint}: {price:.5f}")
+
+```
+
+    Shadow Prices:
+    _C1: 6.00000
+    _C2: -0.00000
+    _C3: -0.00000
+
+```python
+# 输出松弛变量
+slack_variables = []
+for name, constraint in prob.constraints.items():
+    slack_variables.append((name, constraint.slack))
+
+print("Slack Variables:")
+for constraint, slack in slack_variables:
+    print(f"{constraint}: {slack}")
+```
+
+    Slack Variables:
+    _C1: -0.0
+    _C2: 100.0
+    _C3: 400.0
+
+```python
+
+```
